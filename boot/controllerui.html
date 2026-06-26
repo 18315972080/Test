@@ -1,0 +1,31 @@
+package ${package_name?replace("bean","controller")};
+
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+<#if hasOpts??>
+import ${package_name}.Record;
+</#if>
+import ${package_name}.${table_name}Bean;
+import ${package_name?replace("bean","mapper")}.${table_name}${database};
+
+@CrossOrigin
+@RestController
+@RequestMapping("/${table_name?lower_case}")
+public class ${table_name}Controller extends HttpController<${table_name}${database}, ${table_name}Bean> {
+	
+	<#if hasOpts??>
+	@RequestMapping("/opt")
+	public Record opt() {
+		Record r = new Record();
+		<#list entity_column as entity>
+		<#if entity.columnOpts??>
+		r.opt("${entity.changeColumnName?uncap_first}"<#list entity.columnOpts as opt>, "${opt}"</#list>);
+		</#if>
+		</#list>
+		return r;
+	}
+	</#if>
+	
+}

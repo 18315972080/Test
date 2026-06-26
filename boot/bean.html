@@ -1,0 +1,56 @@
+package ${package_name};
+
+import lombok.Data;
+<#if database=='Dao'>
+import org.beetl.sql.core.annotatoin.Table;
+<#else>
+import com.baomidou.mybatisplus.annotation.IdType;
+<#list entity_column as entity>
+<#if (ljflag??&&ljflag)||(leftjoin??&&entity.changeColumnName?uncap_first==leftjoin)>
+import com.baomidou.mybatisplus.annotation.TableField;
+<#break>
+</#if>
+</#list>
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+</#if>
+import ${package_name?replace("bean","util")}.NotNull;
+<#if hasDecimal?exists>
+import java.math.BigDecimal;
+</#if>
+<#if hasDate?exists>
+import java.util.Date;
+<#if elDate?exists>
+import org.springframework.format.annotation.DateTimeFormat;
+</#if>
+</#if>
+
+@Data
+<#if database=='Dao'>
+@Table(name="${table_name_small?replace('v_','tbl_')}")
+<#else>
+@TableName("${table_name_small?replace('v_','tbl_')}")
+</#if>
+public class ${table_name}Bean {
+<#if entity_column?exists>
+	<#if database!='Dao'>
+	@TableId(type=IdType.AUTO)
+	</#if>
+    <#list entity_column as entity>
+    <#if entity.notNull??&&entity.notNull!=''>
+    ${entity.notNull}
+    </#if>
+    <#if database!='Dao'>
+    <#if (ljflag??&&ljflag)||(leftjoin??&&entity.changeColumnName?uncap_first==leftjoin)>
+    <#assign ljflag=true>
+    @TableField(exist=false)
+    </#if>
+    </#if>
+	<#if entity.javaType=='Date'&&elDate?exists&&entity.changeColumnName?uncap_first!='ctime'>
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	</#if>
+    public ${entity.javaType} ${entity.changeColumnName?uncap_first};
+    </#list>
+</#if>
+
+}

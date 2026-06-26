@@ -1,0 +1,35 @@
+<template>
+  <Table ref="table" :util="{
+    httpUrl:'/${table_name?lower_case}',
+    params: '',
+<#list entity_column as entity>
+ <#if (entity.columnComment)??&&(entity.columnComment)!=''>
+  <#if !leftjoin??||leftjoin!=entity.columnName>
+   <#if (entity.columnComment)?contains('关联')>
+    ${leftjoin}: '${ljoption?replace('：','')}//${entity.columnName}?key=${leftjoin}',
+   <#elseif entity.columnName=='ctime'>
+    ${entity.columnName}: '${entity.columnComment}/-1',
+   <#elseif entity.columnComment?contains('时间')>
+    ${entity.columnName}: '${entity.columnComment}///时间',
+   <#elseif entity.javaType=='Date'>
+    ${entity.columnName}: '${entity.columnComment}///日期',
+   <#elseif entity.columnSize==255>
+    ${entity.columnName}: '${entity.columnComment}//file',
+   <#elseif entity.columnOpts??>
+    ${entity.columnName}: '${entity.columnComment}//opt',
+   <#elseif entity.columnType=='TEXT'>
+    ${entity.columnName}: '${entity.columnComment}/1000',
+   <#else>
+    ${entity.columnName}: '${entity.columnComment}/${(entity.columnUnit)!'50'}',
+   </#if>
+  </#if>
+ </#if>
+</#list>
+  }"></Table>
+</template>
+
+<script>
+</script>
+
+<style>
+</style>

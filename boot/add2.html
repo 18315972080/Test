@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<link rel="stylesheet" href="../css/bootstrap.min.css"/>
+<link rel="stylesheet" href="../layer/theme/default/layer.css"/>
+<script src="../js/jquery.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+</head>
+<body>
+<ul class="breadcrumb" style="margin:0;">
+	<li><a href="javascript:window.history.back()">${tblComment}管理</a></li>
+	<li>${r'<#if'} bean??>修改${r'<#else>'}添加${r'</#if>'}${tblComment}</li>
+</ul>
+
+<form action="" method="post" class="form-horizontal">
+    <h5 class="page-header alert-info" style="padding:10px;margin:0 0 10px 0;">基本信息</h5>
+    <input type="hidden" name="id" value="${r'${(bean.id)!}'}"/>
+	<#if ljcolumn??>
+	${r'<#if'} ${ljcolumn}??>
+	<input type="hidden" name="${ljcolumn}" value="${r'${'}${ljcolumn}!}"/>
+	${r'<#else>'}
+	<div class="row col-sm-9 form-group">
+		<label class="col-sm-3 control-label">${ljoption}</label>
+		<div class="col-sm-6">
+			<select name="${ljcolumn}" class="form-control form-input">
+			${r'<#list'} ${leftjoin} as b>
+				<option value="${r'${b.id}'}" ${r'<#if'} (bean.${ljcolumn})??&&bean.${ljcolumn}==b.id>selected${r'</#if>'}>${r'${b.'}${leftjoin}}</option>
+			${r'</#list>'}
+			</select>
+		</div>
+	</div>
+	${r'</#if>'}
+	</#if>
+	<#list entity_column as entity>
+	<#if (entity.columnComment)??&&(entity.columnComment)!=''&&!(entity.columnComment)?contains('关联')&&(entity.changeColumnName?uncap_first)!='ctime'>
+	<div class="row col-sm-9 form-group">
+		<label class="col-sm-3 control-label">${entity.columnComment}</label>
+		<div class="col-sm-6">
+		<#if    entity.columnType=='TEXT'>
+			<textarea name="${entity.changeColumnName?uncap_first}" class="form-control form-input">${r'${(bean.'}${entity.changeColumnName?uncap_first})!}</textarea>
+		<#elseif entity.columnType=='BIT'>
+			<select name="${entity.changeColumnName?uncap_first}" class="form-control form-input">
+				<option value="1" ${r'<#if'} (bean.${entity.changeColumnName?uncap_first})??&& (bean.${entity.changeColumnName?uncap_first})>selected${r'</#if>'}>${entity.columnComment}</option>
+				<option value="0" ${r'<#if'} (bean.${entity.changeColumnName?uncap_first})??&&!(bean.${entity.changeColumnName?uncap_first})>selected${r'</#if>'}>非${entity.columnComment}</option>
+			</select>
+		<#elseif entity.columnOpts??>
+			<select name="${entity.changeColumnName?uncap_first}" class="form-control form-input">
+				<#list entity.columnOpts as opt>
+				<option ${r'<#if'} (bean.${entity.changeColumnName?uncap_first})??&&(bean.${entity.changeColumnName?uncap_first})=='${opt}'>selected${r'</#if>'}>${opt}</option>
+				</#list>
+			</select>
+		<#elseif entity.columnComment?contains('时间')&&entity.columnSize=11>
+			<input name="${entity.changeColumnName?uncap_first}" placeholder="请选择时间" type="date"
+					   class="form-control form-input" value="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}"/>
+		<#elseif entity.columnComment?contains('时间')>
+			<input name="${entity.changeColumnName?uncap_first}" placeholder="请选择时间" type="datetime-local"
+					   class="form-control form-input" value="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}"/>
+		<#elseif entity.columnSize==255>
+			<#assign upload=1/>
+			<input type="hidden" name="${entity.changeColumnName?uncap_first}" value="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}"/>
+			<input type="button" class="btn btn-success upload" value="请上传"/>
+			<img src="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}" style="display:block"/>
+		<#else>
+			<input<#if entity.columnType=='INT'> type="number"</#if> name="${entity.changeColumnName?uncap_first}" class="form-control form-input" value="${r'${'}<#if entity.columnType=='INT'>(</#if>(bean.${entity.changeColumnName?uncap_first}<#if entity.columnType=='INT'>)?c</#if>)!}" maxlength="50"/>
+		</#if>
+		</div>
+    </div>
+    </#if>
+    <#if (entity.changeColumnName)?contains('id')><#break></#if>
+    </#list>
+	
+    <div class="col-sm-3 col-sm-offset-4">
+        <input  type="submit" class="btn btn-success" value="保存"/>
+
+    </div>
+</form>
+<#if upload??&&upload==1>
+<script src="../js/jquery.ajaxupload.js"></script>
+<script src="../layer/layer.js"></script>
+<script>
+	$(function() {
+		$.ajaxUploadSettings.name = 'file';
+		var loading = null;
+		$('.upload').each(function () {
+			var $this = $(this);
+			$this.ajaxUploadPrompt({
+				url: '/file',
+				beforeSend: function () {
+					loading = layer.load(1);
+				},
+				success: function (data) {
+					if (loading) {
+						layer.close(loading);
+					}
+					$this.next().attr('href', data);
+					$this.next().html(data);
+					$this.next().attr('src', data);
+					$this.prev().val(data);
+				},
+				error: function () {
+					if (loading) {
+						layer.close(loading);
+					}
+					alert('上传失败');
+				}
+			});
+		});
+	});
+</script>
+</#if>
+</body>
+</html>

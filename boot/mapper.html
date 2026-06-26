@@ -1,0 +1,52 @@
+package ${package_name?replace("bean","mapper")};
+
+<#if table_name_small?contains('v_')>
+import java.util.List;
+
+</#if>
+<#if table_name_small?contains('v_')||table_name=='User'>
+<#if database=='Dao'>
+import org.beetl.sql.core.annotatoin.Sql;
+<#else>
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+</#if>
+</#if>
+<#if database=='Dao'>
+import org.beetl.sql.core.mapper.BaseMapper;
+<#else>
+import org.apache.ibatis.annotations.Mapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+</#if>
+import ${package_name}.${table_name}Bean;
+
+<#if database!='Dao'>
+@Mapper
+</#if>
+public interface ${table_name}${database} extends BaseMapper<${table_name}Bean> {
+<#if table_name=='User'>
+<#if database=='Dao'>
+	${r'@Sql("select * from tbl_user where username=? and password=?")'}
+	UserBean getUser(String username, String password);
+<#else>
+	${r'@Select("select * from tbl_user where username=#{username} and password=#{password}")'}
+	UserBean getUser(@Param("username")String username, @Param("password")String password);
+</#if>
+</#if>
+<#if table_name_small?contains('v_')>
+<#if database=='Dao'>
+	@Sql("select * from ${table_name_small} where ${ljcolumn}=? order by id desc")
+	List<${table_name}Bean> all(int ${ljcolumn});
+	@Sql("select * from ${table_name_small} order by id desc")
+	List<${table_name}Bean> all();
+<#else>
+	@Select("select * from ${table_name_small} where ${ljcolumn}=${r'#{'}${ljcolumn}} order by id desc")
+	List<${table_name}Bean> all(@Param("${ljcolumn}")int ${ljcolumn});
+	@Select("select * from ${table_name_small} order by id desc")
+	List<${table_name}Bean> selectList();
+</#if>
+</#if>
+
+
+	
+}

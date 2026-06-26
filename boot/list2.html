@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<title></title>
+<link rel="stylesheet" href="../css/bootstrap.min.css"/>
+<script src="../js/jquery.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+</head>
+<body>
+<ul class="breadcrumb" style="margin:0;">
+	<li><a href="#">${tblComment!}管理</a></li>
+	<li>查询${tblComment!}</li>
+</ul>
+
+<form class="form-inline">
+<div class="row alert alert-info" style="margin:0;padding:3px;">
+<#if leftjoin??&&ljoption?contains('：')>
+	<a class="btn btn-default" href="#">${ljoption}${r'${'}(${leftjoin}.${ljcol})!}</a>
+<#else>
+	<a class="btn btn-success" href="/${table_name?uncap_first}/add<#if ljcolumn??>?${ljcolumn}=${r'${'}${ljcolumn}!}</#if>">添加</a>
+	<a class="btn disabled" style="opacity:1"><#if leftjoin??>${r'${'}(${leftjoin}.${leftjoin})!'${tblComment!}'}<#else>${tblComment!}</#if></a>
+</#if>
+</div>
+
+<table class="table table-condensed table-striped">
+	<tr>
+		<th></th>
+		<#list entity_column as entity>
+		<#if (entity.columnComment)??&&(entity.columnComment)!=''&&!(entity.columnComment)?contains('关联')>
+		<th>${entity.columnComment}</th>
+		</#if>
+		</#list>
+		<th>操作</th>
+	</tr>
+	${r'<#list'} retList as bean>
+		<tr>
+			<td>${r'${bean_index+1}'}</td>
+			<#list entity_column as entity>
+			<#if (entity.columnComment)??&&(entity.columnComment)!=''&&!(entity.columnComment)?contains('关联')>
+			<#if (entity.javaType)  == 'Date'>
+			<td>${r'${(bean.'}${entity.changeColumnName?uncap_first}?string('yyyy-MM-dd HH:mm'))!}</td>
+			<#elseif entity.columnType=='BIT'>
+			<td>${r'<#if'} bean.${entity.columnName}>${entity.columnComment}${r'</#if><#if'} !bean.${entity.columnName}>非${entity.columnComment}${r'</#if>'}</td>
+			<#elseif entity.columnSize==255>
+			<td>
+				<a href="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}" target="_blank">
+					${r'${(bean.'}${entity.changeColumnName?uncap_first})!}
+				</a>
+			</td>
+			<#else>
+			<td>${r'${(bean.'}${entity.changeColumnName?uncap_first})!}${(entity.columnUnit)!}</td>
+			</#if>
+			</#if>
+			</#list>
+			<td class="td-normal">
+				<a class="btn btn-success btn-xs" href="/${table_name?uncap_first}/add?id=${r'${bean.id}'}<#if ljcolumn??>&${ljcolumn}=${r'${'}${ljcolumn}!}</#if>">编辑</a>
+				<a class="btn btn-danger  btn-xs" href="/${table_name?uncap_first}/del?id=${r'${bean.id}'}<#if ljcolumn??>&${ljcolumn}=${r'${'}${ljcolumn}!}</#if>">删除</a>
+			</td>
+		</tr>
+	${r'</#list>'}
+</table>
+
+</form>
+</body>
+</html>

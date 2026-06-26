@@ -1,0 +1,109 @@
+package ${package_name?replace("bean","controller")};
+
+<#if hasDate?exists>
+import java.util.Date;
+
+</#if>
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import ${package_name}.${table_name}Bean;
+import ${package_name}.Record;
+<#if leftjoin??&&leftjoin!=(table_name?lower_case)>
+import ${package_name?replace("bean","mapper")}.${leftjoin?cap_first}${database};
+</#if>
+import ${package_name?replace("bean","mapper")}.${table_name}${database};
+import ${package_name?replace("bean","util")}.NotNullUtil;
+
+@Controller
+@RequestMapping("/${table_name?lower_case}")
+public class ${table_name}Controller extends BaseController {
+	@Autowired
+	${table_name}${database} ${table_name?lower_case}Mapper;
+	<#if leftjoin??&&leftjoin!=(table_name?lower_case)>
+	@Autowired
+	${leftjoin?cap_first}${database} ${leftjoin}Mapper;
+	</#if>
+	
+	@GetMapping("/list")
+	public Record list(<#if ljcolumn??>Integer ${ljcolumn}</#if>) {
+		Record r = new Record();
+		<#if leftjoin??>
+		r.put("retList", ${ljcolumn} != null ? ${table_name?lower_case}Mapper.<#if database=='Dao'>all(${ljcolumn})<#else>all(${ljcolumn})</#if> : ${table_name?lower_case}Mapper.<#if database=='Dao'>all()<#else>selectList()</#if>);
+		r.put("${ljcolumn}", ${ljcolumn});
+		r.put("${leftjoin}", ${leftjoin}Mapper.<#if database=='Dao'>single<#else>selectById</#if>(${ljcolumn}));
+		<#else>
+		r.put("retList", ${table_name?lower_case}Mapper.<#if database=='Dao'>all()<#else>selectList(null)</#if>);
+		</#if>
+		return r;
+	}
+	
+	@GetMapping("/add")
+	public Record add(Integer id<#if ljcolumn??>, Integer ${ljcolumn}</#if>) {
+		Record r = new Record();
+		r.put("bean", id != null ? ${table_name?lower_case}Mapper.<#if database=='Dao'>single<#else>selectById</#if>(id) : null);
+		<#if leftjoin??>
+		r.put("${ljcolumn}", ${ljcolumn});
+		r.put("${leftjoin}", ${leftjoin}Mapper.<#if database=='Dao'>all()<#else>selectList(null)</#if>);
+		</#if>
+		return r;
+	}
+	
+	@PostMapping("/add")
+	public String add(${table_name}Bean bean, HttpServletResponse resp) {
+		if (NotNullUtil.isBlank(bean)) {
+			<#if ADMIN=='adminex'>
+			return outRespJson(Record.fail("请完善信息！"), resp);
+			<#else>
+			return jsAlert("请完善信息！", resp);
+			</#if>
+		}
+		try {
+			if (bean.id != null) {
+				<#if database=='Dao'>
+				${table_name?lower_case}Mapper.updateTemplateById(bean);
+				<#else>
+				${table_name?lower_case}Mapper.updateById(bean);
+				</#if>
+			} else {
+				<#if date_list??>
+				<#list date_list as date>
+				bean.${date} = bean.${date} == null ? new Date() : bean.${date};
+				</#list>
+				</#if>
+				${table_name?lower_case}Mapper.insert(bean);
+			}
+			<#if ADMIN=='adminex'>
+			return outRespJson(Record.ok(), resp);
+			<#else>
+			<#if ljcolumn??>
+			return "redirect:/${table_name?lower_case}/list?${ljcolumn}=" + bean.${ljcolumn};
+			<#else>
+			return "redirect:/${table_name?lower_case}/list";
+			</#if>
+			</#if>
+		} catch (Exception e) {
+			<#if ADMIN=='adminex'>
+			return outRespJson(Record.fail(formatError(e)), resp);
+			<#else>
+			return jsAlert(formatError(e), resp);
+			</#if>
+		}
+	}
+	
+	@GetMapping("/del")
+	public String del(int id<#if ljcolumn??>, String ${ljcolumn}</#if>) {
+		${table_name?lower_case}Mapper.deleteById(id);
+		<#if ljcolumn??>
+		return "redirect:/${table_name?lower_case}/list?${ljcolumn}=" + ${ljcolumn};
+		<#else>
+		return "redirect:/${table_name?lower_case}/list";
+		</#if>
+	}
+	
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	${r'<#include "/common/head.html"/>'}
+</head>
+<body class="layer-layout">
+<form id="_valid-form" action="/${table_name?uncap_first}/add" method="post" autoclose="alert">
+	<input type="hidden" name="id" value="${r'${(bean.id)!}'}"/>
+	<#if ljcolumn??>
+	${r'<#if'} ${ljcolumn}??>
+	<input type="hidden" name="${ljcolumn}" value="${r'${'}${ljcolumn}!}"/>
+	${r'<#else>'}
+	<div class="form-cell">
+		<label>${ljoption}</label>
+		<select name="${ljcolumn}" class="form-control form-input">
+		${r'<#list'} ${leftjoin} as b>
+			<option value="${r'${b.id}'}" ${r'<#if'} (bean.${ljcolumn})??&&bean.${ljcolumn}==b.id>selected${r'</#if>'}>${r'${b.'}${leftjoin}}</option>
+		${r'</#list>'}
+		</select>
+	</div>
+	${r'</#if>'}
+	</#if>
+	<#list entity_column as entity>
+	<#if (entity.columnComment)??&&(entity.columnComment)!=''&&!(entity.columnComment)?contains('关联')&&(entity.changeColumnName?uncap_first)!='ctime'>
+	<div class="form-cell">
+		<label>${entity.columnComment}</label>
+	<#if    entity.columnType=='TEXT'>
+		<textarea name="${entity.changeColumnName?uncap_first}" class="form-control form-input">${r'${(bean.'}${entity.changeColumnName?uncap_first})!}</textarea>
+	<#elseif entity.columnType=='BIT'>
+		<select name="${entity.changeColumnName?uncap_first}" class="form-control form-input">
+			<option value="1" ${r'<#if'} (bean.${entity.changeColumnName?uncap_first})??&& (bean.${entity.changeColumnName?uncap_first})>selected${r'</#if>'}>${entity.columnComment}</option>
+			<option value="0" ${r'<#if'} (bean.${entity.changeColumnName?uncap_first})??&&!(bean.${entity.changeColumnName?uncap_first})>selected${r'</#if>'}>非${entity.columnComment}</option>
+		</select>
+	<#elseif entity.columnOpts??>
+		<select name="${entity.changeColumnName?uncap_first}" class="form-control form-input">
+			<#list entity.columnOpts as opt>
+			<option ${r'<#if'} (bean.${entity.changeColumnName?uncap_first})??&&(bean.${entity.changeColumnName?uncap_first})=='${opt}'>selected${r'</#if>'}>${opt}</option>
+			</#list>
+		</select>
+	<#elseif entity.columnComment?contains('时间')&&entity.columnSize=11>
+        <input name="${entity.changeColumnName?uncap_first}" onfocus="this.blur()" placeholder="请选择时间" type="text"
+                   class="form-control form-input" value="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}"
+                   onclick="WdatePicker({el:this, dateFmt:'yyyy-MM-dd'})"/>
+	<#elseif entity.columnComment?contains('时间')>
+        <input name="${entity.changeColumnName?uncap_first}" onfocus="this.blur()" placeholder="请选择时间" type="text"
+                   class="form-control form-input" 
+				   ${r'<#if'} (bean.${entity.changeColumnName?uncap_first})??>
+				   value="${r'${(bean.'}${entity.changeColumnName?uncap_first})?string('yyyy-MM-dd HH:mm:ss')}"
+                   ${r'</#if>'}
+				   onclick="WdatePicker({el:this, dateFmt:'yyyy-MM-dd HH:mm:ss'})"/>
+	<#elseif entity.columnSize==255>
+	    <input type="hidden" name="${entity.changeColumnName?uncap_first}" value="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}"/>
+        <input pri-url="/file" type="button" class="btn btn-success w100 action-upload" value="请上传"/>
+        <a href="${r'${(bean.'}${entity.changeColumnName?uncap_first})!}" target="_blank">${r'${(bean.'}${entity.changeColumnName?uncap_first})!}</a>
+	<#else>
+        <input<#if entity.columnType=='INT'> type="number"</#if> name="${entity.changeColumnName?uncap_first}" class="form-control form-input" value="${r'${'}<#if entity.columnType=='INT'>(</#if>(bean.${entity.changeColumnName?uncap_first}<#if entity.columnType=='INT'>)?c</#if>)!}" maxlength="50"/>
+    </#if>
+    </div>
+    </#if>
+    <#if (entity.changeColumnName)?contains('id')><#break></#if>
+    </#list>
+	
+    <div class="form-cell form-clear">
+        <span class="w120-sq"></span>
+        <input type="submit" class="btn btn-success" value="保存"/>
+    </div>
+</form>
+</body>
+</html>
