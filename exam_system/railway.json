@@ -1,10 +1,10 @@
-﻿{
+{
   "build": {
     "builder": "NIXPACKS",
     "buildCommand": "python manage.py collectstatic --noinput"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate --noinput && gunicorn exam_system.wsgi --bind 0.0.0.0: --workers 4 --timeout 120 --access-logfile -",
+    "startCommand": "python manage.py migrate --noinput && gunicorn exam_system.wsgi --bind 0.0.0.0:$PORT --workers 4 --timeout 120 --access-logfile -",
     "healthcheckPath": "/",
     "restartPolicyType": "ON_FAILURE"
   }
