@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}{{ exam.title }} - 考试预览{% endblock %}
+{% block content %}
+<div class="mt-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'exams:exam_list' %}">考试列表</a></li>
+            <li class="breadcrumb-item active">{{ exam.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">{{ exam.title }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3"><strong><i class="bi bi-book"></i> 科目：</strong>{{ exam.subject.name }}</div>
+                <div class="col-md-3"><strong><i class="bi bi-clock"></i> 时长：</strong>{{ exam.duration }} 分钟</div>
+                <div class="col-md-3"><strong><i class="bi bi-star"></i> 总分：</strong>{{ exam.total_marks }}</div>
+                <div class="col-md-3"><strong><i class="bi bi-check-circle"></i> 及格：</strong>{{ exam.pass_score }} 分</div>
+            </div>
+            {% if exam.description %}
+            <hr>
+            <p class="text-muted">{{ exam.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">试题列表（共 {{ questions|length }} 题）</h5>
+        </div>
+        <div class="card-body">
+            {% for eq in questions %}
+            <div class="border-bottom mb-3 pb-3">
+                <span class="badge bg-secondary me-2">{{ forloop.counter }}</span>
+                <span class="badge bg-info me-2">{{ eq.question.get_question_type_display }}</span>
+                <span class="badge bg-warning text-dark">分值：{{ eq.marks }}</span>
+                <div class="mt-2">{{ eq.question.content|linebreaks }}</div>
+            </div>
+            {% empty %}
+            <p class="text-muted">暂无试题</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="text-center">
+        {% if exam.id in taken_ids %}
+            <a href="{% url 'exams:exam_result' exam.id %}" class="btn btn-success">查看成绩</a>
+        {% else %}
+            <a href="{% url 'exams:take_exam' exam.id %}" class="btn btn-primary btn-lg" onclick="return confirm('确定开始考试吗？考试开始后将计时 {{ exam.duration }} 分钟。')">
+                <i class="bi bi-play-circle"></i> 开始考试
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

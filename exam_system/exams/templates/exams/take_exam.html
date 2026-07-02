@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}作答 - {{ exam.title }}{% endblock %}
+{% block content %}
+<div class="mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4><i class="bi bi-pencil"></i> {{ exam.title }}</h4>
+        <div>
+            <span class="badge bg-info fs-6 me-2" id="timerDisplay">剩余时间：{{ exam.duration }}:00</span>
+            <span class="badge bg-secondary fs-6">共 {{ total_questions }} 题</span>
+        </div>
+    </div>
+
+    <form method="post" id="examForm">
+        {% csrf_token %}
+        <input type="hidden" name="start_time" id="startTime">
+
+        {% for eq in questions %}
+        <div class="card shadow-sm mb-3 question-card" data-qid="{{ eq.question.id }}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>第 {{ forloop.counter }} 题</strong>
+                    <span class="badge bg-info ms-2">{{ eq.question.get_question_type_display }}</span>
+                    <span class="badge bg-warning text-dark ms-1">分值：{{ eq.marks }}</span>
+                </span>
+                {% if eq.question.difficulty %}
+                <span class="text-muted small">
+                    难度：{% for i in "12345"|slice:":eq.question.difficulty" %}★{% endfor %}
+                </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p class="fw-bold">{{ eq.question.content|linebreaksbr }}</p>
+
+                {% if eq.question.question_type == 'single' or eq.question.question_type == 'judge' %}
+                    {% for opt in eq.question.options %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio"
+                               name="question_{{ eq.question.id }}"
+                               id="q{{ eq.question.id }}_{{ forloop.counter }}"
+                               value="{{ opt|slice:':1' }}">
+                        <label class="form-check-label" for="q{{ eq.question.id }}_{{ forloop.counter }}">
+                            {{ opt }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% elif eq.question.question_type == 'multiple' %}
+                    <p class="text-muted small"><i class="bi bi-info-circle"></i> 多选题，可选多个选项</p>
+                    {% for opt in eq.question.options %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox"
+                               name="question_{{ eq.question.id }}"
+                               id="q{{ eq.question.id }}_{{ forloop.counter }}"
+                               value="{{ opt|slice:':1' }}">
+                        <label class="form-check-label" for="q{{ eq.question.id }}_{{ forloop.counter }}">
+                            {{ opt }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="text-center mb-4">
+            <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('确定要交卷吗？交卷后将无法修改答案。')">
+                <i class="bi bi-check-lg"></i> 交卷
+            </button>
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+    (function() {
+        // 计时器
+        const duration = {{ exam.duration }}; // 分钟
+        let remaining = duration * 60;
+        const display = document.getElementById('timerDisplay');
+        const startTimeInput = document.getElementById('startTime');
+        startTimeInput.value = new Date().toISOString();
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return '剩余时间：' + m.toString().padStart(2,'0') + ':' + s.toString().padStart(2,'0');
+        }
+
+        const timer = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+                clearInterval(timer);
+                alert('考试时间到！系统将自动交卷。');
+                document.getElementById('examForm').submit();
+            } else {
+                display.textContent = formatTime(remaining);
+                if (remaining < 300) {
+                    display.className = 'badge bg-danger fs-6 me-2';
+                }
+            }
+        }, 1000);
+    })();
+</script>
+{% endblock %}
+{% endblock %}

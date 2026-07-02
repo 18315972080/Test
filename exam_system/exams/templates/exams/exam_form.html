@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{% if editing %}编辑试卷{% else %}创建试卷{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-3">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-{% if editing %}pencil{% else %}plus-circle{% endif %}"></i>
+                    {% if editing %}编辑试卷{% else %}创建试卷{% endif %}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> {% if editing %}保存修改{% else %}创建试卷{% endif %}
+                    </button>
+                    <a href="{% url 'exams:exam_manage' %}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

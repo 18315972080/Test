@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}个人信息 - 在线考试系统{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-person-vcard"></i> 个人信息</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr><th>用户名</th><td>{{ user.username }}</td></tr>
+                    <tr><th>姓名</th><td>{{ user.get_full_name|default:'未设置' }}</td></tr>
+                    <tr><th>邮箱</th><td>{{ user.email|default:'未设置' }}</td></tr>
+                    {% if is_teacher %}
+                        <tr><th>角色</th><td><span class="badge bg-warning text-dark">教师</span></td></tr>
+                        <tr><th>工号</th><td>{{ user.teacher_profile.teacher_id }}</td></tr>
+                        <tr><th>院系</th><td>{{ user.teacher_profile.department|default:'未设置' }}</td></tr>
+                    {% else %}
+                        <tr><th>角色</th><td><span class="badge bg-info">学生</span></td></tr>
+                        <tr><th>学号</th><td>{{ student.student_id }}</td></tr>
+                        <tr><th>班级</th><td>{{ student.class_name|default:'未设置' }}</td></tr>
+                        <tr><th>手机号</th><td>{{ student.phone|default:'未设置' }}</td></tr>
+                    {% endif %}
+                </table>
+                <div class="text-muted small mt-3">
+                    注册时间：{{ user.date_joined|date:'Y-m-d H:i' }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

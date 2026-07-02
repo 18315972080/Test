@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}考试成绩 - {{ exam.title }}{% endblock %}
+{% block content %}
+<div class="mt-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'exams:exam_list' %}">考试列表</a></li>
+            <li class="breadcrumb-item active">{{ exam.title }} - 成绩</li>
+        </ol>
+    </nav>
+
+    {% if is_teacher_view %}
+        {# 教师查看所有学生成绩 #}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ exam.title }} - 成绩列表</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>学号</th>
+                                <th>姓名</th>
+                                <th>得分</th>
+                                <th>总分</th>
+                                <th>正确/总题</th>
+                                <th>提交时间</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in results %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ r.student.student_profile.student_id|default:'-' }}</td>
+                                <td>{{ r.student.get_full_name|default:r.student.username }}</td>
+                                <td><strong>{{ r.score }}</strong></td>
+                                <td>{{ r.total_marks }}</td>
+                                <td>{{ r.correct_count }}/{{ r.correct_count|add:r.wrong_count }}</td>
+                                <td>{{ r.submitted_at|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    {% if r.score >= exam.pass_score %}
+                                        <span class="badge bg-success">及格</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">不及格</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="text-center text-muted">暂无学生参加考试</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        {# 学生查看个人成绩 #}
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center border-{% if stat.passed %}success{% else %}danger{% endif %}">
+                    <div class="card-body">
+                        <h3 class="card-title {% if stat.passed %}text-success{% else %}text-danger{% endif %}">
+                            {{ stat.result.score }}
+                        </h3>
+                        <p class="text-muted mb-0">得分 / {{ stat.result.total_marks }}</p>
+                        {% if stat.passed %}
+                            <span class="badge bg-success mt-2"><i class="bi bi-check-circle"></i> 及格</span>
+                        {% else %}
+                            <span class="badge bg-danger mt-2"><i class="bi bi-x-circle"></i> 不及格</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ stat.correct_count }}</h3>
+                        <p class="text-muted mb-0">正确 / {{ stat.total }} 题</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h3 class="text-danger">{{ stat.wrong_count }}</h3>
+                        <p class="text-muted mb-0">错误 / {{ stat.total }} 题</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> 答题详情</h5>
+            </div>
+            <div class="card-body">
+                {% for ans in stat.answers %}
+                <div class="border-bottom mb-3 pb-3">
+                    <span class="badge bg-secondary me-1">{{ forloop.counter }}</span>
+                    <span class="badge bg-info me-1">{{ ans.question.get_question_type_display }}</span>
+                    {% if ans.is_correct %}
+                        <span class="badge bg-success"><i class="bi bi-check"></i> 正确</span>
+                    {% else %}
+                        <span class="badge bg-danger"><i class="bi bi-x"></i> 错误</span>
+                    {% endif %}
+                    <div class="mt-2">{{ ans.question.content|linebreaksbr }}</div>
+                    <div class="small mt-1">
+                        {% if ans.question.options %}
+                            <span class="text-muted">选项：{{ ans.question.options|join:' | ' }}</span><br>
+                        {% endif %}
+                        <span class="text-success"><strong>正确答案：</strong>{{ ans.question.correct_answer }}</span><br>
+                        <span class="text-{% if ans.is_correct %}success{% else %}danger{% endif %}">
+                            <strong>你的答案：</strong>{{ ans.selected_answer|join:', ' }}
+                        </span>
+                        {% if ans.question.explanation %}
+                            <br><span class="text-info"><strong>解析：</strong>{{ ans.question.explanation }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

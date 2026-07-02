@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}题库管理{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+    <h4><i class="bi bi-pencil-square"></i> 题库管理</h4>
+    <a href="{% url 'exams:question_create' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> 添加题目</a>
+</div>
+
+<div class="mb-3">
+    <form class="row g-2" method="get">
+        <div class="col-auto">
+            <select name="subject" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">全部科目</option>
+                {% for s in subjects %}
+                <option value="{{ s.id }}" {% if selected_subject == s.id %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">全部题型</option>
+                <option value="single" {% if selected_type == 'single' %}selected{% endif %}>单选题</option>
+                <option value="multiple" {% if selected_type == 'multiple' %}selected{% endif %}>多选题</option>
+                <option value="judge" {% if selected_type == 'judge' %}selected{% endif %}>判断题</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>题型</th>
+                <th>科目</th>
+                <th>题目内容</th>
+                <th>难度</th>
+                <th>出题人</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in questions %}
+            <tr>
+                <td>{{ q.id }}</td>
+                <td><span class="badge bg-info">{{ q.get_question_type_display }}</span></td>
+                <td>{{ q.subject.name }}</td>
+                <td>{{ q.content|truncatechars:50 }}</td>
+                <td>
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= q.difficulty %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ q.created_by|default:'-' }}</td>
+                <td>{{ q.created_at|date:'Y-m-d' }}</td>
+                <td>
+                    <a href="{% url 'exams:question_edit' q.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'exams:question_delete' q.id %}" class="btn btn-sm btn-danger" onclick="return confirm('确定删除？')"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="text-center text-muted">暂无题目</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

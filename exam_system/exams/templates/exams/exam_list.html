@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}考试列表 - 在线考试系统{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+    <h4><i class="bi bi-journal-text"></i> 可参加的考试</h4>
+    <form class="d-flex" method="get">
+        <select name="subject" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+            <option value="">全部科目</option>
+            {% for s in subjects %}
+            <option value="{{ s.id }}" {% if selected_subject == s.id %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if exams %}
+<div class="row">
+    {% for exam in exams %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ exam.title }}</h5>
+                <p class="card-text text-muted small">
+                    <i class="bi bi-book"></i> {{ exam.subject.name }}<br>
+                    <i class="bi bi-clock"></i> {{ exam.duration }} 分钟<br>
+                    <i class="bi bi-star"></i> 总分 {{ exam.total_marks }}
+                </p>
+                {% if exam.id in taken_ids %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> 已参加</span>
+                    <a href="{% url 'exams:exam_result' exam.id %}" class="btn btn-outline-primary btn-sm float-end">查看成绩</a>
+                {% else %}
+                    <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-primary btn-sm">开始考试</a>
+                {% endif %}
+            </div>
+            <div class="card-footer text-muted small">
+                {{ exam.description|truncatechars:60 }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info"><i class="bi bi-info-circle"></i> 暂无可用考试</div>
+{% endif %}
+{% endblock %}

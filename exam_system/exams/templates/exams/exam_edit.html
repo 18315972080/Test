@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}编辑试卷 - {{ exam.title }}{% endblock %}
+{% block content %}
+<div class="row mt-3">
+    <div class="col-md-5">
+        <div class="card shadow mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> 试卷设置</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-save"></i> 保存设置</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> 添加题目</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'exams:exam_add_question' exam.id %}" id="addQuestionForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">选择题目</label>
+                        <select name="question_id" class="form-select" required>
+                            <option value="">-- 请选择 --</option>
+                            {% for q in available_questions %}
+                            <option value="{{ q.id }}">[{{ q.get_question_type_display }}] {{ q.content|truncatechars:50 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">分值</label>
+                        <input type="number" name="marks" class="form-control" value="5" step="0.5" min="0.5">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100"><i class="bi bi-plus"></i> 添加</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white d-flex justify-content-between">
+                <h5 class="mb-0"><i class="bi bi-list"></i> 试题列表（共 {{ questions|length }} 题）</h5>
+                <span class="badge bg-light text-dark">总分：{{ exam.total_marks }}</span>
+            </div>
+            <div class="card-body">
+                {% if questions %}
+                    {% for eq in questions %}
+                    <div class="border-bottom mb-3 pb-3">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-secondary me-1">{{ forloop.counter }}</span>
+                                <span class="badge bg-info me-1">{{ eq.question.get_question_type_display }}</span>
+                                <span class="badge bg-warning text-dark">分值：{{ eq.marks }}</span>
+                            </div>
+                            <a href="{% url 'exams:exam_remove_question' exam.id eq.id %}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('确定移除该题？')">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </div>
+                        <div class="mt-1 small">{{ eq.question.content|truncatechars:120 }}</div>
+                        <div class="text-muted small">
+                            科目：{{ eq.question.subject.name }} | 难度：{% for i in "12345"|slice:":eq.question.difficulty" %}★{% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">尚未添加题目，请在左侧添加</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (!el.classList.contains('btn') && !el.closest('.btn')) {
+            if (!el.classList.contains('form-control') && !el.classList.contains('form-select')) {
+                el.classList.add('form-control');
+            }
+        }
+    });
+</script>
+{% endblock %}

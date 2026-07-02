@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}注册 - 在线考试系统{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h4 class="mb-0"><i class="bi bi-person-plus-fill"></i> 学生注册</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">学号</label>
+                        {{ form.student_id }}
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">密码</label>
+                            {{ form.password1 }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">确认密码</label>
+                            {{ form.password2 }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">邮箱</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">班级</label>
+                        {{ form.class_name }}
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">注册</button>
+                </form>
+                <hr>
+                <div class="text-center">
+                    <span class="text-muted">已有账号？</span>
+                    <a href="{% url 'accounts:login' %}">立即登录</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.querySelectorAll('input').forEach(el => {
+        if (!el.classList.contains('btn')) el.classList.add('form-control');
+    });
+</script>
+{% endblock %}
